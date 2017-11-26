@@ -84,7 +84,7 @@ public class UsuarioDAO {
             String sql = "SELECT URL FROM tb_midia  WHERE id_codigo=?"; // selecionando todo campo username e passoword 
 
             pst = (PreparedStatement) conn.prepareStatement(sql);
-            pst.setString(1, id_codigo); 
+            pst.setInt(1, Integer.parseInt(id_codigo)); 
             rs = pst.executeQuery(); 
             
             if (rs.next()) {
