@@ -20,8 +20,8 @@ public class Connect {
         try {
 
             Class.forName("org.sqlite.JDBC");
-            Connection conn = DriverManager.getConnection("jdbc:sqlite:"+new File(new File(".").getAbsolutePath()).getCanonicalPath()+"\\lib\\databaseMediaBox.sqlite");
-            
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:" + new File(new File(".").getAbsolutePath()).getCanonicalPath() + "\\lib\\databaseMediaBox.sqlite");
+
             return conn;
 
         } catch (HeadlessException | ClassNotFoundException | SQLException e) {

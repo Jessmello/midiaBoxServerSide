@@ -15,8 +15,8 @@ import java.util.logging.Logger;
  * @author Jess
  */
 public class UsuarioDAO {
-   
-    public boolean autenticar(String usuario, String senha){
+
+    public boolean autenticar(String usuario, String senha) {
         Connection conn = null;
         PreparedStatement pst = null;
         ResultSet rs = null;
@@ -26,17 +26,17 @@ public class UsuarioDAO {
             String sql = "SELECT * FROM tableUSER  WHERE Nome=? and Senha=?"; // selecionando todo campo username e passoword 
 
             pst = (PreparedStatement) conn.prepareStatement(sql);
-            pst.setString(1, usuario);  
+            pst.setString(1, usuario);
             pst.setString(2, senha);
-            rs = pst.executeQuery(); 
-            
+            rs = pst.executeQuery();
+
             if (rs.next()) {
                 autenticou = true;
             }
             rs.close();
             pst.close();
             conn.close();
-        }catch(SQLException ex ){
+        } catch (SQLException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);

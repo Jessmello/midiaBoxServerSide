@@ -1,8 +1,5 @@
 package midiaboxserverside;
 
-import SQLiteBanco.UsuarioDAO;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -12,32 +9,16 @@ import java.net.Socket;
  */
 public class MidiaBoxServerSide {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-       try {
+        try {
             ServerSocket servidor = new ServerSocket(12345);
-            while(true){
-                try (Socket cliente = servidor.accept()) {
-                    ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());
-                    ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
-                    System.out.println("conecção aceita");
-                    String ipCliente = cliente.getInetAddress().getHostAddress();
-                    String usuario = (String) entrada.readObject();
-                    System.out.println("recebido usuario"+usuario);
-                    String senha = (String) entrada.readObject();
-                    System.out.println("recebido senha" + senha);
-                    boolean autenticar = new UsuarioDAO().autenticar(usuario, senha);
-                    saida.flush();
-                    saida.writeObject(autenticar);
-                    saida.flush();
-                }
+            while (true) {
+                Socket cliente = servidor.accept();
+                new Servidor(cliente).start();
             }
-        }   
-        catch(Exception e) {
-           System.out.println("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erro: " + e.getMessage());
         }
     }
-    
+
 }
