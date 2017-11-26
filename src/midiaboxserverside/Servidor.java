@@ -24,7 +24,8 @@ public class Servidor extends Thread {
     ObjectOutputStream saida;
     ObjectInputStream entrada;
     
-    private static int SUPERMAN = 5
+    private static int SUPERMAN = 5;
+    private static int SENTINELA = 5;
 
     public Servidor(Socket cliente) {
         this.cliente = cliente;
@@ -86,8 +87,8 @@ public class Servidor extends Thread {
     private void receberArquivo() {
         
         
-        sendToServer1();
-        sendToServer2();
+//        sendToServer1();
+//        sendToServer2();
     }
 
     public void reproduzirArquivo(byte[] msg) {
