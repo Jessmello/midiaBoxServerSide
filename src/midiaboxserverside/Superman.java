@@ -7,11 +7,11 @@ import java.net.Socket;
  *
  * @author Jess
  */
-public class MidiaBoxServerSide {
+public class Superman {
 
     public static void main(String[] args) {
         try {
-            ServerSocket servidor = new ServerSocket(12345);
+            ServerSocket servidor = new ServerSocket(12346);
             while (true) {
                 Socket cliente = servidor.accept();
                 new Servidor(cliente).start();

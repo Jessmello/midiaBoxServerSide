@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author Jess
  */
-public class UsuarioDAO {
+public class DAO {
 
     public boolean autenticar(String usuario, String senha) {
         Connection conn = null;
@@ -37,11 +37,11 @@ public class UsuarioDAO {
             pst.close();
             conn.close();
         } catch (SQLException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return autenticou;
     }
@@ -52,7 +52,7 @@ public class UsuarioDAO {
                
         try {
             conn = Connect.ConnectDB(); // classe connecttDB da classe SQLiteBanco
-            String sql = "INSERT INTO tb_midia  (URL, nome, responsavel, tipo, descricao) values (?, ?, ?, ?, ?,)"; 
+            String sql = "INSERT INTO tb_midia  (URL, nome, responsavel, tipo, descricao) values (?, ?, ?, ?, ?)"; 
 
             pst = (PreparedStatement) conn.prepareStatement(sql);
             pst.setString(1, url);  
@@ -65,11 +65,11 @@ public class UsuarioDAO {
             pst.close();
             conn.close();
         }catch(SQLException ex ){
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -94,11 +94,11 @@ public class UsuarioDAO {
             pst.close();
             conn.close();
         }catch(SQLException ex ){
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return url;
     }
@@ -129,11 +129,11 @@ public class UsuarioDAO {
                 conn.close();
             }
         }catch(SQLException ex ){
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(UsuarioDAO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return midia;
     }
