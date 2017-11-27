@@ -1,4 +1,4 @@
-package SQLiteBanco;
+package Model;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -74,21 +74,23 @@ public class DAO {
         
     }
    
-    public String getUrlVideo (String id_codigo){
+    public Midia getUrlVideo (String id_codigo){
         Connection conn = null;
         PreparedStatement pst = null;
         ResultSet rs = null;
         String url = "";
+        Midia m = null;
         try {
             conn = Connect.ConnectDB(); // classe connecttDB da classe SQLiteBanco
-            String sql = "SELECT URL FROM tb_midia  WHERE id_codigo=?"; // selecionando todo campo username e passoword 
+            String sql = "SELECT URL, nome FROM tb_midia  WHERE id_codigo=?"; // selecionando todo campo username e passoword 
 
             pst = (PreparedStatement) conn.prepareStatement(sql);
             pst.setInt(1, Integer.parseInt(id_codigo)); 
             rs = pst.executeQuery(); 
-            
             if (rs.next()) {
-                url = rs.getString("URL");
+                m = new Midia();
+                m.setUrl(rs.getString("URL"));
+                m.setNome(rs.getString("nome"));
             }
             rs.close();
             pst.close();
@@ -100,7 +102,7 @@ public class DAO {
         } catch (IOException ex) {
             Logger.getLogger(DAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return url;
+        return m;
     }
     
     public List<Midia> listar() throws SQLException, ClassNotFoundException {
@@ -111,16 +113,12 @@ public class DAO {
         try {
             conn = Connect.ConnectDB();
             try {
-                PreparedStatement stmt = conn. prepareStatement("SELECT * FROM tb_midia");
+                PreparedStatement stmt = conn. prepareStatement("SELECT id_codigo, nome FROM tb_midia");
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
                     Midia c = new Midia();
                     c.setId_codigo(rs.getInt("id_codigo"));
-                    c.setUrl(rs.getString("url"));
                     c.setNome(rs.getString("nome"));
-                    c.setResponsavel(rs.getString("responsavel"));
-                    c.setTipo(rs.getString("tipo"));
-                    c.setDescricao(rs.getString("descrição"));
                     midia.add(c);
                 }
                 stmt.close();

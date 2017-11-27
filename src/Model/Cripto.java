@@ -1,4 +1,4 @@
-package SQLiteBanco;
+package Model;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

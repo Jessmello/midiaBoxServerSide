@@ -1,4 +1,4 @@
-package SQLiteBanco;
+package Model;
 
 import java.awt.HeadlessException;
 import java.io.File;

@@ -3,12 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/midiaboxserverside/RemetenteUDP.java</file>
-            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/midiaboxserverside/ServidorTCP.java</file>
-            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/SQLiteBanco/UsuarioDAO.java</file>
             <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/midiaboxserverside/Servidor.java</file>
-            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/midiaboxserverside/MidiaBoxServerSide.java</file>
-            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/midiaboxserverside/TelaServidorConfiguracao.java</file>
+            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/Model/Midia.java</file>
+            <file>file:/C:/Users/Jess/Desktop/Faculdade/Trabalhos%20Faculdade/midiaBoxServerSide/src/Model/DAO.java</file>
         </group>
     </open-files>
 </project-private>

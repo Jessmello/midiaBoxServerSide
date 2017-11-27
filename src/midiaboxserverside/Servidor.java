@@ -1,6 +1,9 @@
 package midiaboxserverside;
 
-import SQLiteBanco.DAO;
+import Model.DAO;
+import Model.Midia;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,6 +13,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.ArrayUtils;
@@ -30,12 +34,10 @@ public class Servidor extends Thread {
     ObjectOutputStream saidaSentinela;
     ObjectInputStream entradaSentinela;
 
-    private static int BATMAN = 12345;
-    private static int SUPERMAN = 12346;
-    private static int SENTINELA = 12347;
-    private static String SUPERMANHOST = "localhost";
-    private static String SENTINELAHOST = "localhost";
-    private static String BATMANHOST = "localhost";
+    private static final int SUPERMAN = 12346;
+    private static final int SENTINELA = 12347;
+    private static final String SUPERMANHOST = "localhost";
+    private static final String SENTINELAHOST = "localhost";
     private boolean ativo = true;
 
     public Servidor(Socket cliente) {
@@ -45,8 +47,10 @@ public class Servidor extends Thread {
     @Override
     public void run() {
         try {
-            saida = new ObjectOutputStream(cliente.getOutputStream());
-            entrada = new ObjectInputStream(cliente.getInputStream());
+            saidaClient = new ObjectOutputStream(cliente.getOutputStream());
+            entradaClient = new ObjectInputStream(cliente.getInputStream());
+            saida = saidaClient;
+            entrada = entradaClient;
             System.out.println("conecção aceita");
 
             while (ativo) {
@@ -75,6 +79,9 @@ public class Servidor extends Thread {
                     case "salvar":    //servidor para servidores secundarios                  
                         salvar();
                         break;
+                    case "getLista":    //servidor para servidores secundarios                  
+                        listar();
+                        break;
                     case "getMidia": //servidor principal para servidores de armazenamento
                         //pega sua parte e envia
                         getMidia();
@@ -82,13 +89,12 @@ public class Servidor extends Thread {
                     case "getVideo":
                         getVideo();
                         break;
-                    case "fechar":
-                        ativo = false;
-                        break;
                 }
             }
 
         } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -96,32 +102,56 @@ public class Servidor extends Thread {
     private void getVideo() throws IOException, ClassNotFoundException {
         //client que pede
         //chama os 2 servidores de armazenamento pega a parte de cada e envia para o client
+        Midia midia = new DAO().getUrlVideo((String) entrada.readObject());
+        System.out.println("Solicitando midia aos servidores secundarios " );
+        String url = midia.getUrl();
+        String nomeArquivo = midia.getNome();
+        String[] split = url.split("[|]");
 
-        String url = new DAO().getUrlVideo((String) entrada.readObject());
-        String[] split = url.split("|");
-        saida = saidaSuperman;
-        entrada = entradaSuperman;
-        byte[] arq = getVideoFromServer(split[0], SUPERMAN);
-        saida = saidaSentinela;
-        entrada = entradaSentinela;
-        byte[] arq2 = getVideoFromServer(split[1], SENTINELA);
+        byte[] arq = getFromSuperman(split);
+        byte[] arq2 = getFromSentinela(split);
         byte[] arquivo = ArrayUtils.addAll(arq, arq2);
         saida = saidaClient;
         entrada = entradaClient;
         saida.writeInt(arquivo.length);
-        saida.flush();
-        String[] split1 = url.split("/");
-        saida.writeObject(split1[split1.length - 1]);
-        saida.flush();
+        saida.writeObject(nomeArquivo);
         saida.write(arquivo);
         saida.flush();
-//        enviarArquivo(arquivo, cliente.getLocalAddress(), cliente.getPort());
+    }
+
+    private byte[] getFromSentinela(String[] split) throws IOException {
+        Socket clienteSentinela = new Socket(SENTINELAHOST, SENTINELA);
+        System.out.println("Pegando midia no servidor: " + clienteSentinela.getInetAddress().getHostAddress());
+        saidaSentinela = new ObjectOutputStream(clienteSentinela.getOutputStream());
+        entradaSentinela = new ObjectInputStream(clienteSentinela.getInputStream());
+        saida = saidaSentinela;
+        entrada = entradaSentinela;
+        byte[] arq2 = getVideoFromServer(split[1]);
+        saidaSentinela.close();
+        entradaSentinela.close();
+        clienteSentinela.close();
+        return arq2;
+    }
+
+    private byte[] getFromSuperman(String[] split) throws IOException {
+        Socket clienteSuperman = new Socket(SUPERMANHOST, SUPERMAN);
+        System.out.println("Pegando midia no servidor: " + clienteSuperman.getInetAddress().getHostAddress());
+        saidaSuperman = new ObjectOutputStream(clienteSuperman.getOutputStream());
+        entradaSuperman = new ObjectInputStream(clienteSuperman.getInputStream());
+        saida = saidaSuperman;
+        entrada = entradaSuperman;
+        byte[] arq = getVideoFromServer(split[0]);
+        saidaSuperman.close();
+        entradaSuperman.close();
+        clienteSuperman.close();
+        return arq;
     }
 
     private void receberArquivo() throws IOException, ClassNotFoundException {
         int tamanho = entrada.readInt();
         String nomeArquivo = (String) entrada.readObject();
-        System.out.println("recebendo midia do cliente: "+cliente.getInetAddress().getHostAddress());
+        nomeArquivo = nomeArquivo.replace(" ", "_");
+        System.out.println("recebendo midia do cliente: " + cliente.getInetAddress().getHostAddress());
         byte[] arquivo = new byte[tamanho];
         entrada.readFully(arquivo);
         int part1 = tamanho / 2;
@@ -135,36 +165,9 @@ public class Servidor extends Thread {
         System.out.println("Arquivo Salvo!");
     }
 
-//    public void enviarArquivo(byte[] msg, InetAddress addr, int port) throws SocketException, IOException {
-//        DatagramPacket pkg = new DatagramPacket(msg, msg.length, addr, port);
-//        DatagramSocket ds = new DatagramSocket();
-//        ds.send(pkg);
-//
-//        ds.close();
-//    }
-    private byte[] getVideoFromServer(String string, int porta) throws IOException {
-        saida.writeObject("getMidia");
-        saida.flush();
-        saida.writeObject(string);
-        saida.flush();
-        int tamanho = entrada.readInt();
-        System.out.println("recebendo video do servidor");
-        byte[] arquivo = new byte[tamanho];
-        entrada.read(arquivo);
-//        return getArquivo(porta, tamanho);
-        return arquivo;
-    }
-
-//    private byte[] getArquivo(int porta, int tamanho) throws IOException, SocketException {
-//        DatagramSocket ds = new DatagramSocket(porta);
-//        byte[] midia = new byte[tamanho];
-//        DatagramPacket pkg = new DatagramPacket(midia, midia.length);
-//        ds.receive(pkg);
-//        ds.close();
-//        return midia;
-//    }
     private String sendToServer(byte[] arq, String nomeArquivo, int porta, String host) throws IOException, ClassNotFoundException {
         Socket clienteSuperman = new Socket(SUPERMANHOST, SUPERMAN);
+        System.out.println("Enviando midia para servidor: " + clienteSuperman.getInetAddress().getHostAddress());
         saidaSuperman = new ObjectOutputStream(clienteSuperman.getOutputStream());
         entradaSuperman = new ObjectInputStream(clienteSuperman.getInputStream());
         saidaSuperman.writeObject("salvar");
@@ -181,6 +184,7 @@ public class Servidor extends Thread {
 
     private String sendToServer2(byte[] arq, String nomeArquivo, int porta, String host) throws IOException, ClassNotFoundException {
         Socket clienteSentinela = new Socket(SENTINELAHOST, SENTINELA);
+        System.out.println("Enviando midia para servidor: " + clienteSentinela.getInetAddress().getHostAddress());
         saidaSentinela = new ObjectOutputStream(clienteSentinela.getOutputStream());
         entradaSentinela = new ObjectInputStream(clienteSentinela.getInputStream());
         saidaSentinela.writeObject("salvar");
@@ -188,7 +192,6 @@ public class Servidor extends Thread {
         saidaSentinela.writeObject(nomeArquivo);
         saidaSentinela.write(arq);
         saidaSentinela.flush();
-//        enviarArquivo(arq, InetAddress.getByName(host),porta);
         String url = (String) entradaSentinela.readObject();
         saidaSentinela.close();
         entradaSentinela.close();
@@ -200,7 +203,7 @@ public class Servidor extends Thread {
         int tamanho = entrada.readInt();
         String nomeArquivo = (String) entrada.readObject();
         byte[] arquivo = new byte[tamanho];
-        System.out.println("recebendo arquivo servidor secundario");
+        System.out.println("salvando arquivo no servidor secundario");
         entrada.readFully(arquivo);
         String path = "c:\\" + cliente.getLocalPort() + "\\" + nomeArquivo;
         saida.writeObject(path);
@@ -209,20 +212,36 @@ public class Servidor extends Thread {
         fos.write(arquivo);
         ativo = false;
     }
-
-    private void getMidia() {
-
+    
+    private byte[] getVideoFromServer(String string) throws IOException {
+        saida.writeObject("getMidia");
+        saida.writeObject(string);
+        saida.flush();
+        int tamanho = entrada.readInt();
+        byte[] arquivo = new byte[tamanho];
+        entrada.readFully(arquivo);
+        return arquivo;
     }
 
-    private void conectarServidoresSecundarios() throws IOException {
-//        if (cliente.getLocalPort() == BATMAN) {
-        Socket clienteSuperman = new Socket(SUPERMANHOST, SUPERMAN);
-        Socket clienteSentinela = new Socket(SENTINELAHOST, SENTINELA);
-        saidaSuperman = new ObjectOutputStream(clienteSuperman.getOutputStream());
-        entradaSuperman = new ObjectInputStream(clienteSuperman.getInputStream());
-        saidaSentinela = new ObjectOutputStream(clienteSentinela.getOutputStream());
-        entradaSentinela = new ObjectInputStream(clienteSentinela.getInputStream());
-//        }
+    private void getMidia() throws IOException, ClassNotFoundException {
+        String urlArquivo = (String) entrada.readObject();
+        System.out.println("buscando midia no servidor secundario");
+        FileInputStream fileInputStream;
+        File file = new File(urlArquivo);
+        byte[] bFile = new byte[(int) file.length()];
+        fileInputStream = new FileInputStream(file);
+        fileInputStream.read(bFile);
+        fileInputStream.close();
+        saida.writeInt(bFile.length);
+        saida.write(bFile);
+        saida.flush();
+    }
+
+    private void listar() throws IOException, SQLException, ClassNotFoundException {
+        System.out.println("Carregando lista de arquivos para cliente"+ cliente.getInetAddress().getHostAddress());
+        
+        saida.writeObject(new DAO().listar());
+        saida.flush();
     }
 
 }
